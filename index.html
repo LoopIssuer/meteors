@@ -28,9 +28,23 @@
                 <span>🏆 Wynik:</span>
                 <span id="score">0</span>
             </div>
-            <!-- Zmienione: tylko etykieta zamiast przycisków -->
             <div class="ui-section">
                 <span id="difficultyLabel" class="difficulty-label">Poziom: Łatwy</span>
+            </div>
+        </div>
+
+        <!-- STREAK COMBO BAR -->
+        <div id="streakContainer" class="hidden">
+            <div class="streak-header">
+                <span class="streak-title">🔥 COMBO STREAK</span>
+                <span class="streak-count"><span id="streakCount">0</span>/10</span>
+            </div>
+            <div class="streak-bonus-info">
+                Następny bonus: <span id="nextBonus">50</span> pkt
+            </div>
+            <div class="streak-progress-bar">
+                <div class="streak-progress-fill" id="streakProgress" style="width: 0%"></div>
+                <div class="streak-progress-text" id="streakProgressText">0/10</div>
             </div>
         </div>
 
@@ -78,6 +92,7 @@
                     <p>🎤 Wypowiedz głośno wynik działania po polsku</p>
                     <p>🚀 Rakieta automatycznie zniszczy trafiony meteoryt</p>
                     <p>💔 Masz 3 życia - nie pozwól meteorytom dotrzeć do wyrzutni!</p>
+                    <p>🔥 BONUS: Zbij 10 meteorów bez straty życia = dodatkowe punkty!</p>
                 </div>
 
                 <div class="player-selection">
@@ -105,7 +120,6 @@
         <p>Twoja przeglądarka nie obsługuje Web Speech API.</p>
         <p>Użyj przeglądarki Chrome, Edge lub Safari.</p>
     </div>
-
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/Database.js"></script>
@@ -116,5 +130,6 @@
     <script src="js/UIManager.js"></script>
     <script src="js/Game.js"></script>
     <script src="js/main.js"></script>
+    <script src="css/styles.css"></script>
 </body>
 </html>

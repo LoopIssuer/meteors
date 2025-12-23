@@ -18,6 +18,10 @@ class Game {
         this.currentPlayer = null;
         this.players = [];
         
+        // Streak system
+        this.streakCount = 0;
+        this.streakLevel = 0;
+        
         // Game objects
         this.meteors = [];
         this.rockets = [];
@@ -29,85 +33,56 @@ class Game {
         this._init();
     }
     
-    /**
-     * Initialize game
-     * @private
-     */
     async _init() {
-        // Check speech support
         if (!this.speech.checkSupport()) {
             this.ui.showWarning();
             return;
         }
         
-        // Generate stars
         this.particles.generateStars();
         
-        // Setup speech callbacks
         this.speech.onResult = (number) => this._onSpeechResult(number);
         this.speech.onStatusChange = (status, text) => this.ui.updateSpeechStatus(status, text);
         this.speech.onPermissionChange = (granted) => this._onPermissionChange(granted);
         
-        // Setup UI callbacks
         this.ui.setupDifficultyButtons((diff) => this.difficulty = diff);
         this.ui.setupMicPermissionButton(() => this._requestMicPermission());
         document.getElementById('startBtn').addEventListener('click', () => this.start());
         
-        // Check microphone permission and proceed
         await this._checkAndRequestMicPermission();
     }
     
-    /**
-     * Check microphone permission and show appropriate screen
-     * @private
-     */
     async _checkAndRequestMicPermission() {
         this.ui.showLoading();
         
         const permissionStatus = await this.speech.checkPermission();
         
         if (permissionStatus === 'granted') {
-            // Permission already granted, load players
             await this.loadPlayers();
         } else if (permissionStatus === 'denied') {
-            // Permission was denied, show permission screen with instructions
             this.ui.showMicPermission();
         } else {
-            // Permission not yet requested, show permission screen
             this.ui.showMicPermission();
         }
     }
     
-    /**
-     * Request microphone permission
-     * @private
-     */
     async _requestMicPermission() {
         const granted = await this.speech.requestPermission();
         
         if (granted) {
             await this.loadPlayers();
         } else {
-            // Show error message
             alert('Dostęp do mikrofonu jest wymagany do gry. Zezwól na dostęp w ustawieniach przeglądarki.');
         }
     }
     
-    /**
-     * Handle permission change
-     * @private
-     */
     _onPermissionChange(granted) {
         if (!granted && this.isRunning) {
-            // Permission revoked during game
             this._gameOver();
             alert('Dostęp do mikrofonu został odebrany. Gra została zakończona.');
         }
     }
     
-    /**
-     * Load players from database
-     */
     async loadPlayers() {
         this.ui.showLoading();
         
@@ -120,29 +95,24 @@ class Game {
         }
     }
     
-    /**
-     * Select a player
-     * @private
-     */
     _selectPlayer(player) {
         this.currentPlayer = player;
         this.ui.updateStartButton(true, `▶️ GRAJ JAKO ${player.name.toUpperCase()}`);
     }
     
-    /**
-     * Start the game
-     */
     start() {
         if (!this.currentPlayer) return;
         
         this.isRunning = true;
         this.score = 0;
         this.lives = CONFIG.INITIAL_LIVES;
+        this.streakCount = 0;
+        this.streakLevel = 0;
         
-        // Update UI
         this.ui.showGame();
         this.ui.updateScore(0);
         this.ui.resetLives();
+        this.ui.resetStreak();
         this.ui.updateDifficultyLabel(this.difficulty);
         
         const playerIndex = this.players.findIndex(p => p.id === this.currentPlayer.id);
@@ -150,22 +120,14 @@ class Game {
         this.ui.updateCurrentPlayer(avatar, this.currentPlayer.name);
         this.ui.updateLeaderboard(this.players, this.currentPlayer.id);
         
-        // Start spawning meteors
         const spawnRate = CONFIG.DIFFICULTY[this.difficulty].spawnRate;
         this.meteorInterval = setInterval(() => this._spawnMeteor(), spawnRate);
         this._spawnMeteor();
         
-        // Start game loop
         this._gameLoop();
-        
-        // Start speech recognition
         this.speech.start();
     }
     
-    /**
-     * Main game loop
-     * @private
-     */
     _gameLoop() {
         if (!this.isRunning) return;
         
@@ -175,20 +137,12 @@ class Game {
         this.gameLoop = requestAnimationFrame(() => this._gameLoop());
     }
     
-    /**
-     * Spawn a new meteor
-     * @private
-     */
     _spawnMeteor() {
         if (!this.isRunning) return;
         const meteor = new Meteor(this.container, this.difficulty);
         this.meteors.push(meteor);
     }
     
-    /**
-     * Update all meteors
-     * @private
-     */
     _updateMeteors() {
         const limitY = window.innerHeight - CONFIG.LAUNCHER_Y_OFFSET;
         
@@ -204,10 +158,6 @@ class Game {
         }
     }
     
-    /**
-     * Update all rockets
-     * @private
-     */
     _updateRockets() {
         for (let i = this.rockets.length - 1; i >= 0; i--) {
             const rocket = this.rockets[i];
@@ -217,20 +167,17 @@ class Game {
                 const target = rocket.target;
                 const center = target.getCenter();
                 
-                // Create explosion
                 this.particles.createExplosion(center.x, center.y);
                 
-                // Destroy meteor and rocket
                 target.destroy();
                 rocket.destroy();
                 
-                // Remove from arrays
                 const meteorIndex = this.meteors.indexOf(target);
                 if (meteorIndex > -1) this.meteors.splice(meteorIndex, 1);
                 this.rockets.splice(i, 1);
                 
-                // Add score
                 this._addScore();
+                this._incrementStreak();
             } else if (!result.active) {
                 rocket.destroy();
                 this.rockets.splice(i, 1);
@@ -238,10 +185,6 @@ class Game {
         }
     }
     
-    /**
-     * Handle speech result
-     * @private
-     */
     _onSpeechResult(number) {
         for (const meteor of this.meteors) {
             if (meteor.result === number) {
@@ -254,10 +197,6 @@ class Game {
         }
     }
     
-    /**
-     * Fire a rocket at target
-     * @private
-     */
     _fireRocket(target) {
         const pos = this.ui.getLauncherPosition();
         const rocket = new Rocket(this.container, pos.x, pos.y, target);
@@ -265,66 +204,75 @@ class Game {
         this.ui.animateLauncher();
     }
     
-    /**
-     * Add score
-     * @private
-     */
     _addScore() {
         const points = CONFIG.DIFFICULTY[this.difficulty].points;
         this.score += points;
         this.ui.updateScore(this.score);
     }
     
-    /**
-     * Lose a life
-     * @private
-     */
+    _incrementStreak() {
+        this.streakCount++;
+        
+        const nextBonus = CONFIG.STREAK_BASE_BONUS + (this.streakLevel * CONFIG.STREAK_BONUS_INCREMENT);
+        this.ui.updateStreak(this.streakCount, CONFIG.STREAK_TARGET, nextBonus);
+        
+        if (this.streakCount >= CONFIG.STREAK_TARGET) {
+            this._awardStreakBonus();
+        }
+    }
+    
+    _awardStreakBonus() {
+        const bonusPoints = CONFIG.STREAK_BASE_BONUS + (this.streakLevel * CONFIG.STREAK_BONUS_INCREMENT);
+        
+        this.score += bonusPoints;
+        this.ui.updateScore(this.score);
+        this.ui.showBonusPopup(bonusPoints);
+        
+        this.streakLevel++;
+        this.streakCount = 0;
+        
+        const nextBonus = CONFIG.STREAK_BASE_BONUS + (this.streakLevel * CONFIG.STREAK_BONUS_INCREMENT);
+        this.ui.updateStreak(0, CONFIG.STREAK_TARGET, nextBonus);
+    }
+    
     _loseLife() {
         this.lives--;
         this.ui.updateLives(this.lives);
+        
+        this.streakCount = 0;
+        this.streakLevel = 0;
+        this.ui.resetStreak();
         
         if (this.lives <= 0) {
             this._gameOver();
         }
     }
     
-    /**
-     * End the game
-     * @private
-     */
     async _gameOver() {
         this.isRunning = false;
         
-        // Stop timers
         clearInterval(this.meteorInterval);
         cancelAnimationFrame(this.gameLoop);
         
-        // Stop speech
         this.speech.stop();
-        
-        // Hide game UI
         this.ui.hideGame();
         
-        // Clean up game objects
         this.meteors.forEach(m => m.destroy());
         this.rockets.forEach(r => r.destroy());
         this.meteors = [];
         this.rockets = [];
         
-        // Check for new highscore
         const isNewHighscore = this.score > this.currentPlayer.highscore;
         if (isNewHighscore) {
             await this.db.updateHighscore(this.currentPlayer.id, this.score);
             this.currentPlayer.highscore = this.score;
             
-            // Update local players array
             const playerIndex = this.players.findIndex(p => p.id === this.currentPlayer.id);
             if (playerIndex > -1) {
                 this.players[playerIndex].highscore = this.score;
             }
         }
         
-        // Show game over screen
         const playerIndex = this.players.findIndex(p => p.id === this.currentPlayer.id);
         const avatar = CONFIG.AVATARS[playerIndex % CONFIG.AVATARS.length];
         
@@ -338,16 +286,10 @@ class Game {
         );
     }
     
-    /**
-     * Restart the game
-     */
     restart() {
         this.start();
     }
     
-    /**
-     * Go back to menu
-     */
     async backToMenu() {
         this.currentPlayer = null;
         this.ui.updateStartButton(false, '▶️ WYBIERZ GRACZA');

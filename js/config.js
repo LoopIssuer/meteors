@@ -10,13 +10,18 @@ const CONFIG = {
     INITIAL_LIVES: 3,
     LAUNCHER_Y_OFFSET: 110,
     
+    // Streak system
+    STREAK_TARGET: 10,           // Co ile meteorów bonus
+    STREAK_BASE_BONUS: 50,       // Bazowy bonus za pierwszą serię
+    STREAK_BONUS_INCREMENT: 50,  // O ile wzrasta bonus przy każdej kolejnej serii
+    
     // Difficulty settings
     DIFFICULTY: {
         easy: {
-            spawnRate: 3500,        // Wolniejsze pojawianie się
+            spawnRate: 3500,
             meteorSize: 80,
-            speedBase: 0.4,         // ZMNIEJSZONE z 0.8 na 0.4
-            speedVariance: 0.2,     // Mniejsza wariancja
+            speedBase: 0.4,
+            speedVariance: 0.2,
             points: 10,
             numberRange: { min: 1, max: 9 },
             label: 'Łatwy'

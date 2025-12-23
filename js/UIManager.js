@@ -3,7 +3,6 @@
  */
 class UIManager {
     constructor() {
-        // Cache DOM elements
         this.elements = {
             overlay: document.getElementById('overlay'),
             loadingScreen: document.getElementById('loadingScreen'),
@@ -23,11 +22,14 @@ class UIManager {
             lives: document.getElementById('lives'),
             currentPlayer: document.getElementById('currentPlayer'),
             difficultyLabel: document.getElementById('difficultyLabel'),
-            warning: document.getElementById('warning')
+            warning: document.getElementById('warning'),
+            streakContainer: document.getElementById('streakContainer'),
+            streakCount: document.getElementById('streakCount'),
+            streakProgress: document.getElementById('streakProgress'),
+            streakProgressText: document.getElementById('streakProgressText'),
+            nextBonus: document.getElementById('nextBonus')
         };
     }
-    
-    // ==================== SCREENS ====================
     
     hideAllScreens() {
         this.elements.loadingScreen.classList.add('hidden');
@@ -60,6 +62,7 @@ class UIManager {
         this.elements.launcher.classList.remove('hidden');
         this.elements.speechIndicator.classList.remove('hidden');
         this.elements.leaderboard.classList.remove('hidden');
+        this.elements.streakContainer.classList.remove('hidden');
     }
     
     hideGame() {
@@ -67,6 +70,7 @@ class UIManager {
         this.elements.launcher.classList.add('hidden');
         this.elements.speechIndicator.classList.add('hidden');
         this.elements.leaderboard.classList.add('hidden');
+        this.elements.streakContainer.classList.add('hidden');
     }
     
     showGameOver(playerName, avatar, score, isNewHighscore, highscore, difficulty) {
@@ -110,8 +114,6 @@ class UIManager {
         `;
     }
     
-    // ==================== PLAYERS ====================
-    
     renderPlayers(players, onSelect) {
         this.elements.playersGrid.innerHTML = '';
         
@@ -148,8 +150,6 @@ class UIManager {
         this.elements.currentPlayer.innerHTML = `${avatar} ${name}`;
     }
     
-    // ==================== GAME STATE ====================
-    
     updateScore(score) {
         this.elements.score.textContent = score;
         this.elements.score.style.transform = 'scale(1.3)';
@@ -170,20 +170,36 @@ class UIManager {
         hearts.forEach(heart => heart.classList.remove('lost'));
     }
     
-    // ==================== DIFFICULTY ==================== 
+    updateStreak(current, target, nextBonus) {
+        this.elements.streakCount.textContent = current;
+        this.elements.nextBonus.textContent = nextBonus;
+        
+        const percentage = (current / target) * 100;
+        this.elements.streakProgress.style.width = percentage + '%';
+        this.elements.streakProgressText.textContent = `${current}/${target}`;
+    }
     
-    /**
-     * Update difficulty label during gameplay
-     * @param {string} difficulty - easy, medium, or hard
-     */
+    resetStreak() {
+        this.updateStreak(0, CONFIG.STREAK_TARGET, CONFIG.STREAK_BASE_BONUS);
+    }
+    
+    showBonusPopup(bonusPoints) {
+        const popup = document.createElement('div');
+        popup.className = 'bonus-popup';
+        popup.textContent = `+${bonusPoints} BONUS!`;
+        
+        document.getElementById('gameContainer').appendChild(popup);
+        
+        setTimeout(() => {
+            popup.remove();
+        }, 1500);
+    }
+    
     updateDifficultyLabel(difficulty) {
         const label = this.elements.difficultyLabel;
         const settings = CONFIG.DIFFICULTY[difficulty];
         
-        // Remove old classes
         label.classList.remove('easy', 'medium', 'hard');
-        
-        // Add new class and update text
         label.classList.add(difficulty);
         label.textContent = `Poziom: ${settings.label}`;
     }
@@ -200,8 +216,6 @@ class UIManager {
         });
     }
     
-    // ==================== LEADERBOARD ====================
-    
     updateLeaderboard(players, currentPlayerId) {
         const sorted = [...players].sort((a, b) => b.highscore - a.highscore);
         this.elements.leaderboardList.innerHTML = sorted.map(player => `
@@ -211,8 +225,6 @@ class UIManager {
             </div>
         `).join('');
     }
-    
-    // ==================== SPEECH ====================
     
     updateSpeechStatus(status, text) {
         this.elements.speechIndicator.classList.remove('listening', 'heard');
@@ -225,8 +237,6 @@ class UIManager {
         
         this.elements.speechText.textContent = text;
     }
-    
-    // ==================== LAUNCHER ====================
     
     getLauncherPosition() {
         const rect = this.elements.launcher.getBoundingClientRect();
@@ -242,8 +252,6 @@ class UIManager {
             this.elements.launcher.style.transform = 'translateX(-50%) scale(1)';
         }, 100);
     }
-    
-    // ==================== MIC PERMISSION ====================
     
     setupMicPermissionButton(onClick) {
         if (this.elements.requestMicBtn) {

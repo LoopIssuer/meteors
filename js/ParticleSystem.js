@@ -1,4 +1,3 @@
-
 /**
  * ParticleSystem - Handles visual effects
  */
@@ -7,11 +6,6 @@ class ParticleSystem {
         this.container = container;
     }
     
-    /**
-     * Create explosion at position
-     * @param {number} x - X position
-     * @param {number} y - Y position
-     */
     createExplosion(x, y) {
         const explosion = document.createElement('div');
         explosion.className = 'explosion';
@@ -40,9 +34,6 @@ class ParticleSystem {
         setTimeout(() => explosion.remove(), duration);
     }
     
-    /**
-     * Generate background stars
-     */
     generateStars() {
         const starsContainer = document.getElementById('stars');
         if (!starsContainer) return;
