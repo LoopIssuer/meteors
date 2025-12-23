@@ -57,6 +57,49 @@ const CONFIG = {
         spawnScoreInterval: { min: 50, max: 100 }  // Co ile punktów się pojawia
     },
     
+    // Bomb meteor settings
+    BOMB_METEOR: {
+        minScore: 200,                // Minimalna liczba punktów do pojawienia się
+        spawnChance: 0.15,            // 15% szansy przy każdym spawnie po przekroczeniu minScore
+        explosionRadius: 200,         // Promień wybuchu w pikselach
+        bonusPoints: 50,              // Dodatkowe punkty
+        speedMultiplier: 0.7          // Wolniejszy niż normalny
+    },
+    
+    // Splitting meteor settings
+    SPLITTING_METEOR: {
+        minScore: 250,                // Minimalna liczba punktów
+        spawnChance: 0.12,            // 12% szansy
+        bonusPoints: 40,              // Punkty za rodzica
+        childBonusPoints: 15,         // Punkty za każde dziecko
+        childSizeMultiplier: 0.6,     // Rozmiar dzieci (60% rodzica)
+        speedMultiplier: 0.8          // Trochę wolniejszy
+    },
+    
+    // Multiply meteor settings
+    MULTIPLY_METEOR: {
+        minScore: 300,                // Minimalna liczba punktów
+        spawnChance: 0.10,            // 10% szansy
+        bonusPoints: 60,              // Dodatkowe punkty
+        maxResults: {                 // Maksymalne wyniki dla poziomów
+            easy: 20,
+            medium: 50,
+            hard: 100
+        },
+        speedMultiplier: 0.9
+    },
+    
+    // Boss meteor settings
+    BOSS_METEOR: {
+        firstSpawn: 500,              // Pierwszy boss przy 500 punktach
+        spawnInterval: 500,           // Kolejne co 500 punktów
+        phases: 5,                    // Liczba faz (działań do rozwiązania)
+        size: 150,                    // Duży rozmiar
+        speedMultiplier: 0.3,         // Bardzo wolny
+        bonusPoints: 200,             // Duża nagroda
+        healthBarHeight: 8            // Wysokość paska zdrowia
+    },
+    
     // Player avatars
     AVATARS: ['🦊', '🐱', '🐶', '🦁', '🐼', '🐨', '🐯', '🦄', '🐲', '🦋'],
     

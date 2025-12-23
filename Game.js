@@ -22,9 +22,11 @@ class Game {
         this.streakCount = 0;
         this.streakLevel = 0;
         
-        // Fast meteor system
+        // Special meteor systems
         this.lastFastMeteorScore = 0;
         this.nextFastMeteorScore = this._calculateNextFastMeteorScore();
+        this.nextBossScore = CONFIG.BOSS_METEOR.firstSpawn;
+        this.bossSpawned = false;
         
         // Game objects
         this.meteors = [];
@@ -114,6 +116,8 @@ class Game {
         this.streakLevel = 0;
         this.lastFastMeteorScore = 0;
         this.nextFastMeteorScore = this._calculateNextFastMeteorScore();
+        this.nextBossScore = CONFIG.BOSS_METEOR.firstSpawn;
+        this.bossSpawned = false;
         
         this.ui.showGame();
         this.ui.updateScore(0);
@@ -145,17 +149,69 @@ class Game {
     
     _spawnMeteor() {
         if (!this.isRunning) return;
-        const meteor = new Meteor(this.container, this.difficulty);
+        
+        // Check for boss spawn
+        if (this.score >= this.nextBossScore && !this.bossSpawned) {
+            this._spawnBoss();
+            return;
+        }
+        
+        // Determine meteor type based on score and chance
+        let type = 'normal';
+        
+        if (this.score >= CONFIG.MULTIPLY_METEOR.minScore && Math.random() < CONFIG.MULTIPLY_METEOR.spawnChance) {
+            type = 'multiply';
+        } else if (this.score >= CONFIG.SPLITTING_METEOR.minScore && Math.random() < CONFIG.SPLITTING_METEOR.spawnChance) {
+            type = 'splitting';
+        } else if (this.score >= CONFIG.BOMB_METEOR.minScore && Math.random() < CONFIG.BOMB_METEOR.spawnChance) {
+            type = 'bomb';
+        }
+        
+        const meteor = new Meteor(this.container, this.difficulty, type);
         this.meteors.push(meteor);
     }
     
     _spawnFastMeteor() {
         if (!this.isRunning) return;
-        const meteor = new Meteor(this.container, this.difficulty, true);
+        const meteor = new Meteor(this.container, this.difficulty, 'fast');
         this.meteors.push(meteor);
         
         this.lastFastMeteorScore = this.score;
         this.nextFastMeteorScore = this._calculateNextFastMeteorScore();
+    }
+    
+    _spawnBoss() {
+        if (!this.isRunning) return;
+        const meteor = new Meteor(this.container, this.difficulty, 'boss');
+        this.meteors.push(meteor);
+        
+        this.bossSpawned = true;
+        this.nextBossScore += CONFIG.BOSS_METEOR.spawnInterval;
+    }
+    
+    _spawnSplittingChildren(parentX, parentY) {
+        if (!this.isRunning) return;
+        
+        const settings = CONFIG.DIFFICULTY[this.difficulty];
+        const childSize = settings.meteorSize * CONFIG.SPLITTING_METEOR.childSizeMultiplier;
+        
+        // Spawn 2 smaller meteors
+        for (let i = 0; i < 2; i++) {
+            const child = new Meteor(this.container, this.difficulty, 'normal');
+            
+            // Adjust size and position
+            child.element.style.width = childSize + 'px';
+            child.element.style.height = childSize + 'px';
+            child.x = parentX + (i === 0 ? -30 : 30);
+            child.y = parentY;
+            child.element.style.left = child.x + 'px';
+            child.element.style.top = child.y + 'px';
+            
+            // Slightly faster
+            child.speed *= 1.2;
+            
+            this.meteors.push(child);
+        }
     }
     
     _calculateNextFastMeteorScore() {
@@ -187,9 +243,39 @@ class Game {
             if (result.hitTarget) {
                 const target = rocket.target;
                 const center = target.getCenter();
-                const isFastMeteor = target.isFast;
+                
+                // Handle boss meteor (multi-phase)
+                if (target.type === 'boss') {
+                    const defeated = target.advanceBossPhase();
+                    
+                    if (defeated) {
+                        this.particles.createExplosion(center.x, center.y);
+                        target.destroy();
+                        
+                        const meteorIndex = this.meteors.indexOf(target);
+                        if (meteorIndex > -1) this.meteors.splice(meteorIndex, 1);
+                        
+                        this._addScore(target);
+                        this._incrementStreak();
+                        this.bossSpawned = false;
+                    }
+                    
+                    rocket.destroy();
+                    this.rockets.splice(i, 1);
+                    continue;
+                }
                 
                 this.particles.createExplosion(center.x, center.y);
+                
+                // Handle bomb meteor (AOE damage)
+                if (target.type === 'bomb') {
+                    this._handleBombExplosion(center);
+                }
+                
+                // Handle splitting meteor
+                if (target.type === 'splitting') {
+                    this._spawnSplittingChildren(target.x, target.y);
+                }
                 
                 target.destroy();
                 rocket.destroy();
@@ -198,7 +284,7 @@ class Game {
                 if (meteorIndex > -1) this.meteors.splice(meteorIndex, 1);
                 this.rockets.splice(i, 1);
                 
-                this._addScore(isFastMeteor);
+                this._addScore(target);
                 this._incrementStreak();
             } else if (!result.active) {
                 rocket.destroy();
@@ -226,11 +312,12 @@ class Game {
         this.ui.animateLauncher();
     }
     
-    _addScore(isFastMeteor = false) {
+    _addScore(meteor) {
         let points = CONFIG.DIFFICULTY[this.difficulty].points;
         
-        if (isFastMeteor) {
-            points += CONFIG.FAST_METEOR.bonusPoints;
+        // Add bonus points based on meteor type
+        if (meteor && typeof meteor === 'object') {
+            points += meteor.getBonusPoints();
         }
         
         this.score += points;
@@ -238,6 +325,43 @@ class Game {
         
         if (this.score >= this.nextFastMeteorScore) {
             this._spawnFastMeteor();
+        }
+    }
+    
+    _handleBombExplosion(center) {
+        const radius = CONFIG.BOMB_METEOR.explosionRadius;
+        const meteorsToDestroy = [];
+        
+        // Find all meteors in radius
+        for (const meteor of this.meteors) {
+            if (meteor.isDestroyed) continue;
+            
+            const meteorCenter = meteor.getCenter();
+            const dx = meteorCenter.x - center.x;
+            const dy = meteorCenter.y - center.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < radius && meteor !== this.meteors[this.meteors.length - 1]) {
+                meteorsToDestroy.push(meteor);
+            }
+        }
+        
+        // Destroy meteors in radius
+        for (const meteor of meteorsToDestroy) {
+            const meteorCenter = meteor.getCenter();
+            this.particles.createExplosion(meteorCenter.x, meteorCenter.y);
+            
+            meteor.destroy();
+            const index = this.meteors.indexOf(meteor);
+            if (index > -1) this.meteors.splice(index, 1);
+            
+            // Add points for each destroyed meteor
+            const points = CONFIG.DIFFICULTY[this.difficulty].points;
+            this.score += points;
+        }
+        
+        if (meteorsToDestroy.length > 0) {
+            this.ui.updateScore(this.score);
         }
     }
     
