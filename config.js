@@ -127,13 +127,6 @@ const CONFIG = {
                 icon: '💣',
                 duration: 0,          // Instant
                 color: '#FF5722'
-            },
-            {
-                id: 'shield',
-                name: 'Tarcza',
-                icon: '🛡️',
-                duration: 0,          // Do następnej straty życia
-                color: '#2196F3'
             }
         ]
     },

@@ -164,7 +164,10 @@ class Meteor {
         this.element.style.top = this.y + 'px';
         this.element.style.setProperty('--powerup-color', powerupConfig.color);
         
-        // Powerup icon
+        // mark powerup type for styling
+        this.element.dataset.powerup = powerupConfig.id;
+
+        // Powerup icon (no text labels)
         const iconDiv = document.createElement('div');
         iconDiv.className = 'powerup-icon';
         iconDiv.textContent = powerupConfig.icon;
@@ -175,12 +178,6 @@ class Meteor {
         textSpan.className = 'meteor-text';
         textSpan.textContent = problem.text;
         this.element.appendChild(textSpan);
-        
-        // Powerup label
-        const label = document.createElement('div');
-        label.className = 'powerup-label';
-        label.textContent = powerupConfig.name;
-        this.element.appendChild(label);
         
         this.container.appendChild(this.element);
     }

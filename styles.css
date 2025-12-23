@@ -38,50 +38,64 @@ body {
     50% { opacity: 1; }
 }
 
-/* ========== UI PANEL ========== */
-#uiPanel {
+/* ========== ŻYCIA - LEWA STRONA EKRANU ========== */
+#livesPanel {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+#livesPanel .heart {
+    font-size: 36px;
+    transition: all 0.3s;
+    filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+}
+
+#livesPanel .heart.lost {
+    filter: grayscale(100%);
+    transform: scale(0.7);
+    opacity: 0.5;
+}
+
+/* ========== NAZWA GRACZA - LEWY DOLNY RÓG ========== */
+#currentPlayer {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    z-index: 100;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+}
+
+/* ========== UI PANEL - PRAWA STRONA ========== */
+#uiPanelRight {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     padding: 15px 20px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.85);
     border-radius: 15px;
     color: white;
     z-index: 100;
-    flex-wrap: wrap;
-    gap: 10px;
 }
 
 .ui-section {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-#currentPlayer {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-}
-
-#lives {
-    display: flex;
-    gap: 5px;
-}
-
-.heart {
-    font-size: 24px;
-    transition: transform 0.3s;
-}
-
-.heart.lost {
-    filter: grayscale(100%);
-    transform: scale(0.8);
 }
 
 #score {
@@ -94,54 +108,35 @@ body {
 /* ========== STREAK COMBO BAR ========== */
 #streakContainer {
     position: absolute;
-    top: 90px;
+    bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
-    width: 400px;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 15px;
-    padding: 15px 20px;
-    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 20px;
+    padding: 8px 15px;
+    z-index: 40;
     border: 2px solid #ffd700;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
 }
 
 #streakContainer.hidden {
     display: none;
 }
 
-.streak-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    color: white;
-}
-
-.streak-title {
-    font-size: 16px;
+.streak-label {
+    font-size: 14px;
     font-weight: bold;
     color: #ffd700;
-}
-
-.streak-count {
-    font-size: 18px;
-    font-weight: bold;
-    color: #4CAF50;
-}
-
-.streak-bonus-info {
-    font-size: 12px;
-    color: #aaa;
-    text-align: center;
-    margin-bottom: 8px;
+    white-space: nowrap;
 }
 
 .streak-progress-bar {
-    width: 100%;
-    height: 25px;
+    width: 150px;
+    height: 20px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -150,7 +145,7 @@ body {
 .streak-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #4CAF50, #8BC34A, #CDDC39);
-    border-radius: 12px;
+    border-radius: 10px;
     transition: width 0.5s ease;
     position: relative;
     box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
@@ -177,7 +172,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
     color: white;
     text-shadow: 1px 1px 3px black;
@@ -271,18 +266,20 @@ body {
 /* ========== SPEECH INDICATOR ========== */
 #speechIndicator {
     position: absolute;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 30px;
+    /* obok wyrzutni, po prawej stronie */
+    left: calc(50% + 70px);
+    bottom: 85px;
+    transform: none;
+    padding: 10px 16px;
     background: rgba(0, 0, 0, 0.8);
-    border-radius: 25px;
+    border-radius: 18px;
     color: white;
-    font-size: 18px;
+    font-size: 16px;
     z-index: 100;
     display: flex;
     align-items: center;
     gap: 10px;
+    max-width: min(420px, 46vw);
 }
 
 #speechIndicator.listening {
@@ -305,11 +302,11 @@ body {
 /* ========== LAUNCHER ========== */
 #launcher {
     position: absolute;
-    bottom: 10px;
+    bottom: 50px;
     left: 50%;
     transform: translateX(-50%);
     width: 80px;
-    height: 100px;
+    height: 120px;
     z-index: 50;
     transition: transform 0.1s;
 }
@@ -319,33 +316,78 @@ body {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px;
-    height: 30px;
-    background: linear-gradient(to bottom, #666, #333);
-    border-radius: 5px 5px 10px 10px;
+    width: 70px;
+    height: 40px;
+    background: linear-gradient(to bottom, #444, #222, #111);
+    border-radius: 10px 10px 15px 15px;
+    box-shadow: 
+        0 0 20px rgba(255, 100, 0, 0.6),
+        inset 0 5px 10px rgba(255, 255, 255, 0.2),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.5);
+    border: 2px solid #333;
 }
 
 .launcher-tube {
     position: absolute;
-    bottom: 25px;
+    bottom: 35px;
     left: 50%;
     transform: translateX(-50%);
-    width: 30px;
-    height: 70px;
-    background: linear-gradient(to right, #555, #888, #555);
-    border-radius: 10px 10px 5px 5px;
+    width: 35px;
+    height: 80px;
+    background: linear-gradient(to right, 
+        #888 0%, 
+        #ccc 20%, 
+        #fff 50%, 
+        #ccc 80%, 
+        #888 100%);
+    border-radius: 8px 8px 5px 5px;
+    box-shadow: 
+        0 0 15px rgba(255, 255, 255, 0.3),
+        inset 0 0 10px rgba(255, 255, 255, 0.5);
+    border: 2px solid #666;
 }
 
 .launcher-tip {
     position: absolute;
-    bottom: 90px;
+    bottom: 110px;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 30px solid #ff3300;
+    filter: drop-shadow(0 0 5px rgba(255, 50, 0, 0.8));
+}
+
+.launcher-tip::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: -20px;
     border-left: 20px solid transparent;
     border-right: 20px solid transparent;
-    border-bottom: 20px solid #f44336;
+    border-bottom: 25px solid #ff6600;
+}
+
+/* ========== LAUNCHER FLAME EFFECT ========== */
+.launcher-tube::before {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, #ff6600, #ff3300, transparent 70%);
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: flamePulse 1s infinite alternate;
+}
+
+@keyframes flamePulse {
+    0% { opacity: 0.5; transform: translateX(-50%) scale(0.8); }
+    100% { opacity: 0.9; transform: translateX(-50%) scale(1.2); }
 }
 
 /* ========== METEOR ========== */
@@ -357,7 +399,7 @@ body {
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, #8B4513, #4a2500);
     box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 0 20px rgba(255, 100, 0, 0.5);
-    animation: rotate 5s linear infinite;
+    animation: rotate 4s linear infinite;
     z-index: 30;
 }
 
@@ -365,7 +407,7 @@ body {
 .meteor.fast {
     background: radial-gradient(circle at 30% 30%, #ff3300, #cc0000, #660000);
     box-shadow: inset -5px -5px 15px rgba(0,0,0,0.7), 0 0 30px rgba(255, 50, 0, 0.9), 0 0 50px rgba(255, 100, 0, 0.5);
-    animation: rotate 4s linear infinite, pulseFast 0.5s ease-in-out infinite;
+    animation: rotate 2s linear infinite, pulseFast 1.2s ease-in-out infinite;
     border: 2px solid #ff6600;
 }
 
@@ -378,7 +420,7 @@ body {
 .meteor.bomb {
     background: radial-gradient(circle at 30% 30%, #333, #000);
     box-shadow: inset -5px -5px 15px rgba(0,0,0,0.7), 0 0 30px rgba(255, 100, 0, 0.6);
-    animation: rotate 4s linear infinite, pulseBomb 1s ease-in-out infinite;
+    animation: rotate 3s linear infinite, pulseBomb 2s ease-in-out infinite;
     border: 3px solid #ff6600;
 }
 
@@ -391,7 +433,7 @@ body {
 .meteor.splitting {
     background: radial-gradient(circle at 30% 30%, #9C27B0, #6A1B9A, #4A148C);
     box-shadow: inset -5px -5px 15px rgba(0,0,0,0.7), 0 0 30px rgba(156, 39, 176, 0.8);
-    animation: rotate 3.5s linear infinite, shakeSplit 0.3s ease-in-out infinite;
+    animation: rotate 3.5s linear infinite, shakeSplit 0.9s ease-in-out infinite;
     border: 2px solid #E1BEE7;
 }
 
@@ -405,7 +447,7 @@ body {
 .meteor.multiply {
     background: radial-gradient(circle at 30% 30%, #2196F3, #1976D2, #0D47A1);
     box-shadow: inset -5px -5px 15px rgba(0,0,0,0.7), 0 0 30px rgba(33, 150, 243, 0.8);
-    animation: rotate 4s linear infinite, glowMultiply 1.5s ease-in-out infinite;
+    animation: rotate 3s linear infinite, glowMultiply 2.8s ease-in-out infinite;
     border: 2px solid #64B5F6;
 }
 
@@ -414,11 +456,51 @@ body {
     50% { box-shadow: inset -5px -5px 15px rgba(0,0,0,0.7), 0 0 40px rgba(33, 150, 243, 1); }
 }
 
+/* Powerup Meteor (icon-only + per-powerup color) */
+.meteor.powerup {
+    --c: var(--powerup-color, #4CAF50);
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), color-mix(in srgb, var(--c) 75%, #000 25%));
+    box-shadow:
+        inset -6px -6px 18px rgba(0,0,0,0.55),
+        0 0 25px color-mix(in srgb, var(--c) 70%, transparent),
+        0 0 55px color-mix(in srgb, var(--c) 45%, transparent);
+    border: 3px solid rgba(255,255,255,0.55);
+    animation: rotate 5s linear infinite, pulsePowerup 3.6s ease-in-out infinite;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes pulsePowerup {
+    0%, 100% {
+        filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c) 55%, transparent));
+    }
+    50% {
+        filter: drop-shadow(0 0 22px color-mix(in srgb, var(--c) 85%, transparent));
+    }
+}
+
+.powerup-icon {
+    font-size: 34px;
+    line-height: 1;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.6));
+}
+
+.meteor.powerup .meteor-text {
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.22);
+}
+
 /* Boss Meteor */
 .meteor.boss {
     background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500, #FF8C00);
     box-shadow: inset -8px -8px 20px rgba(0,0,0,0.5), 0 0 50px rgba(255, 215, 0, 0.9), 0 0 100px rgba(255, 140, 0, 0.5);
-    animation: rotate 6s linear infinite, pulseBoss 1s ease-in-out infinite;
+    animation: rotate 6s linear infinite, pulseBoss 2.5s ease-in-out infinite;
     border: 4px solid #FFD700;
 }
 
@@ -469,7 +551,7 @@ body {
     top: -15px;
     right: -15px;
     font-size: 24px;
-    animation: bounce 0.5s ease-in-out infinite;
+    animation: bounce 1.2s ease-in-out infinite;
     z-index: 2;
     filter: drop-shadow(0 0 5px rgba(255, 200, 0, 0.8));
 }
@@ -778,14 +860,16 @@ body {
 /* ========== LEADERBOARD ========== */
 #leaderboard {
     position: absolute;
-    top: 80px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
+    top: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.85);
     border-radius: 10px;
     padding: 10px 15px;
     color: white;
     font-size: 12px;
     z-index: 90;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 #leaderboard h4 { margin-bottom: 8px; color: #ffd700; }
@@ -931,7 +1015,20 @@ body {
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-    #uiPanel { flex-direction: column; align-items: flex-start; }
+    #livesPanel, #uiPanelRight {
+        position: static;
+        margin: 5px;
+        max-width: 100%;
+    }
+    #livesPanel {
+        order: 1;
+        flex-direction: row;
+        justify-content: center;
+        gap: 5px;
+    }
+    #uiPanelRight {
+        order: 2;
+    }
     .meteor-text { font-size: 14px; }
     #overlay h1 { font-size: 28px; }
     #overlay h2 { font-size: 20px; }
@@ -940,10 +1037,43 @@ body {
     .player-avatar { font-size: 35px; }
     #leaderboard { display: none; }
     #micPermissionScreen h1 { font-size: 24px; }
-    #streakContainer { width: 90%; top: 100px; }
+    #streakContainer { width: 90%; bottom: 10px; top: auto; left: 50%; transform: translateX(-50%); }
+    #speechIndicator {
+        left: 50%;
+        bottom: 145px;
+        transform: translateX(-50%);
+        max-width: 90vw;
+    }
     .bonus-popup { font-size: 32px; padding: 20px 30px; }
     .active-powerups-container { top: 200px; }
     .powerup-notification { font-size: 18px; padding: 20px 30px; }
     .powerup-notification-icon { font-size: 36px; }
     .powerup-notification-text { font-size: 20px; }
+    
+    /* Launcher adjustments for mobile */
+    #launcher {
+        bottom: 30px;
+        height: 100px;
+    }
+    .launcher-base {
+        width: 50px;
+        height: 30px;
+    }
+    .launcher-tube {
+        width: 25px;
+        height: 60px;
+        bottom: 25px;
+    }
+    .launcher-tip {
+        bottom: 80px;
+        border-left: 18px solid transparent;
+        border-right: 18px solid transparent;
+        border-bottom: 25px solid #ff3300;
+    }
+    .launcher-tip::after {
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-bottom: 20px solid #ff6600;
+        left: -15px;
+    }
 }

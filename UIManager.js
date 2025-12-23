@@ -9,7 +9,8 @@ class UIManager {
             menuScreen: document.getElementById('menuScreen'),
             gameOverScreen: document.getElementById('gameOverScreen'),
             micPermissionScreen: document.getElementById('micPermissionScreen'),
-            uiPanel: document.getElementById('uiPanel'),
+            livesPanel: document.getElementById('livesPanel'),
+            uiPanelRight: document.getElementById('uiPanelRight'),
             launcher: document.getElementById('launcher'),
             leaderboard: document.getElementById('leaderboard'),
             leaderboardList: document.getElementById('leaderboardList'),
@@ -19,15 +20,12 @@ class UIManager {
             startBtn: document.getElementById('startBtn'),
             requestMicBtn: document.getElementById('requestMicBtn'),
             score: document.getElementById('score'),
-            lives: document.getElementById('lives'),
             currentPlayer: document.getElementById('currentPlayer'),
             difficultyLabel: document.getElementById('difficultyLabel'),
             warning: document.getElementById('warning'),
             streakContainer: document.getElementById('streakContainer'),
-            streakCount: document.getElementById('streakCount'),
             streakProgress: document.getElementById('streakProgress'),
-            streakProgressText: document.getElementById('streakProgressText'),
-            nextBonus: document.getElementById('nextBonus')
+            streakProgressText: document.getElementById('streakProgressText')
         };
     }
     
@@ -58,7 +56,9 @@ class UIManager {
     
     showGame() {
         this.elements.overlay.classList.add('hidden');
-        this.elements.uiPanel.classList.remove('hidden');
+        this.elements.livesPanel.classList.remove('hidden');
+        this.elements.currentPlayer.classList.remove('hidden');
+        this.elements.uiPanelRight.classList.remove('hidden');
         this.elements.launcher.classList.remove('hidden');
         this.elements.speechIndicator.classList.remove('hidden');
         this.elements.leaderboard.classList.remove('hidden');
@@ -66,7 +66,9 @@ class UIManager {
     }
     
     hideGame() {
-        this.elements.uiPanel.classList.add('hidden');
+        this.elements.livesPanel.classList.add('hidden');
+        this.elements.currentPlayer.classList.add('hidden');
+        this.elements.uiPanelRight.classList.add('hidden');
         this.elements.launcher.classList.add('hidden');
         this.elements.speechIndicator.classList.add('hidden');
         this.elements.leaderboard.classList.add('hidden');
@@ -159,28 +161,25 @@ class UIManager {
     }
     
     updateLives(lives) {
-        const hearts = this.elements.lives.querySelectorAll('.heart');
+        const hearts = this.elements.livesPanel.querySelectorAll('.heart');
         hearts.forEach((heart, index) => {
             heart.classList.toggle('lost', index >= lives);
         });
     }
     
     resetLives() {
-        const hearts = this.elements.lives.querySelectorAll('.heart');
+        const hearts = this.elements.livesPanel.querySelectorAll('.heart');
         hearts.forEach(heart => heart.classList.remove('lost'));
     }
     
-    updateStreak(current, target, nextBonus) {
-        this.elements.streakCount.textContent = current;
-        this.elements.nextBonus.textContent = nextBonus;
-        
+    updateStreak(current, target) {
         const percentage = (current / target) * 100;
         this.elements.streakProgress.style.width = percentage + '%';
         this.elements.streakProgressText.textContent = `${current}/${target}`;
     }
     
     resetStreak() {
-        this.updateStreak(0, CONFIG.STREAK_TARGET, CONFIG.STREAK_BASE_BONUS);
+        this.updateStreak(0, CONFIG.STREAK_TARGET);
     }
     
     showBonusPopup(bonusPoints) {

@@ -32,7 +32,6 @@ class Game {
         this.lastPowerupScore = 0;
         this.nextPowerupScore = CONFIG.POWERUP.spawnInterval;
         this.activePowerups = new Map(); // Map of active powerups with timers
-        this.hasShield = false;
         
         // Game objects
         this.meteors = [];
@@ -136,7 +135,6 @@ class Game {
         this.lastPowerupScore = 0;
         this.nextPowerupScore = CONFIG.POWERUP.spawnInterval;
         this.activePowerups.clear();
-        this.hasShield = false;
         
         this.ui.showGame();
         this.ui.clearActivePowerups();
@@ -391,9 +389,6 @@ class Game {
             case 'megaBomb':
                 this._activateMegaBomb();
                 break;
-            case 'shield':
-                this._activateShield();
-                break;
         }
     }
     
@@ -478,14 +473,6 @@ class Game {
         }
     }
     
-    _activateShield() {
-        const powerupType = CONFIG.POWERUP.types.find(p => p.id === 'shield');
-        this.ui.showPowerupNotification(powerupType.name, powerupType.icon);
-        
-        this.hasShield = true;
-        this.ui.addActivePowerup('shield', powerupType.name, powerupType.icon, 0);
-    }
-    
     _handleBombExplosion(center) {
         const radius = CONFIG.BOMB_METEOR.explosionRadius;
         const meteorsToDestroy = [];
@@ -526,8 +513,7 @@ class Game {
     _incrementStreak() {
         this.streakCount++;
         
-        const nextBonus = CONFIG.STREAK_BASE_BONUS + (this.streakLevel * CONFIG.STREAK_BONUS_INCREMENT);
-        this.ui.updateStreak(this.streakCount, CONFIG.STREAK_TARGET, nextBonus);
+        this.ui.updateStreak(this.streakCount, CONFIG.STREAK_TARGET);
         
         if (this.streakCount >= CONFIG.STREAK_TARGET) {
             this._awardStreakBonus();
@@ -544,8 +530,7 @@ class Game {
         this.streakLevel++;
         this.streakCount = 0;
         
-        const nextBonus = CONFIG.STREAK_BASE_BONUS + (this.streakLevel * CONFIG.STREAK_BONUS_INCREMENT);
-        this.ui.updateStreak(0, CONFIG.STREAK_TARGET, nextBonus);
+        this.ui.updateStreak(0, CONFIG.STREAK_TARGET);
     }
     
     _loseLife() {

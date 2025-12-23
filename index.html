@@ -11,19 +11,18 @@
     <div id="gameContainer">
         <div class="stars" id="stars"></div>
 
-        <!-- UI Panel podczas gry -->
-        <div id="uiPanel" class="hidden">
-            <div class="ui-section">
-                <span id="currentPlayer">Gracz</span>
-            </div>
-            <div class="ui-section">
-                <span>❤️ Życia:</span>
-                <div id="lives">
-                    <span class="heart">❤️</span>
-                    <span class="heart">❤️</span>
-                    <span class="heart">❤️</span>
-                </div>
-            </div>
+        <!-- UI Panel - Życia (lewa strona ekranu) -->
+        <div id="livesPanel" class="hidden">
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+            <span class="heart">❤️</span>
+        </div>
+
+        <!-- Nazwa gracza (lewy dolny róg) -->
+        <div id="currentPlayer" class="hidden">Gracz</div>
+
+        <!-- UI Panel - Prawa strona -->
+        <div id="uiPanelRight" class="hidden">
             <div class="ui-section">
                 <span>🏆 Wynik:</span>
                 <span id="score">0</span>
@@ -35,13 +34,7 @@
 
         <!-- STREAK COMBO BAR -->
         <div id="streakContainer" class="hidden">
-            <div class="streak-header">
-                <span class="streak-title">🔥 COMBO STREAK</span>
-                <span class="streak-count"><span id="streakCount">0</span>/10</span>
-            </div>
-            <div class="streak-bonus-info">
-                Następny bonus: <span id="nextBonus">50</span> pkt
-            </div>
+            <div class="streak-label">🔥 COMBO</div>
             <div class="streak-progress-bar">
                 <div class="streak-progress-fill" id="streakProgress" style="width: 0%"></div>
                 <div class="streak-progress-text" id="streakProgressText">0/10</div>
