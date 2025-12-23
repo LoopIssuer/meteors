@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematyczna Obrona - Gra Głosowa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <div class="stars" id="stars"></div>
+
+        <div id="uiPanel" class="hidden">
+            <div class="ui-section">
+                <span id="currentPlayer">Gracz</span>
+            </div>
+            <div class="ui-section">
+                <span>❤️ Życia:</span>
+                <div id="lives">
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                </div>
+            </div>
+            <div class="ui-section">
+                <span>🏆 Wynik:</span>
+                <span id="score">0</span>
+            </div>
+            <div class="ui-section" id="difficulty">
+                <span>Poziom:</span>
+                <button class="diff-btn easy active" data-diff="easy">Łatwy</button>
+                <button class="diff-btn medium" data-diff="medium">Średni</button>
+                <button class="diff-btn hard" data-diff="hard">Trudny</button>
+            </div>
+        </div>
+
+        <div id="leaderboard" class="hidden">
+            <h4>🏆 Ranking</h4>
+            <div id="leaderboardList"></div>
+        </div>
+
+        <div id="speechIndicator" class="hidden">
+            <span class="mic-icon">🎤</span>
+            <span id="speechText">Inicjalizacja...</span>
+        </div>
+
+        <div id="launcher" class="hidden">
+            <div class="launcher-tip"></div>
+            <div class="launcher-tube"></div>
+            <div class="launcher-base"></div>
+        </div>
+
+        <div id="overlay">
+            <div id="loadingScreen" class="loading">
+                <div class="spinner"></div>
+                <p>Ładowanie danych graczy...</p>
+            </div>
+
+            <div id="menuScreen" class="hidden">
+                <h1>🚀 Matematyczna Obrona 🌟</h1>
+                
+                <div class="instructions">
+                    <p><strong>Jak grać:</strong></p>
+                    <p>🌑 Meteoryty spadają z nieba z działaniami matematycznymi</p>
+                    <p>🎤 Wypowiedz głośno wynik działania po polsku</p>
+                    <p>🚀 Rakieta automatycznie zniszczy trafiony meteoryt</p>
+                    <p>💔 Masz 3 życia - nie pozwól meteorytom dotrzeć do wyrzutni!</p>
+                </div>
+
+                <div class="player-selection">
+                    <h3>👤 Wybierz gracza:</h3>
+                    <div class="players-grid" id="playersGrid"></div>
+                </div>
+
+                <div class="ui-section" id="difficultyMenu" style="justify-content: center;">
+                    <span>Poziom trudności:</span>
+                    <button class="diff-btn easy active" data-diff="easy">Łatwy</button>
+                    <button class="diff-btn medium" data-diff="medium">Średni</button>
+                    <button class="diff-btn hard" data-diff="hard">Trudny</button>
+                </div>
+
+                <button id="startBtn" disabled>▶️ WYBIERZ GRACZA</button>
+            </div>
+
+            <div id="gameOverScreen" class="hidden"></div>
+        </div>
+    </div>
+
+    <div id="warning" class="hidden">
+        <h2>⚠️ Brak wsparcia dla rozpoznawania mowy</h2>
+        <p>Twoja przeglądarka nie obsługuje Web Speech API.</p>
+        <p>Użyj przeglądarki Chrome, Edge lub Safari.</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/Database.js"></script>
+    <script src="js/SpeechManager.js"></script>
+    <script src="js/Meteor.js"></script>
+    <script src="js/Rocket.js"></script>
+    <script src="js/ParticleSystem.js"></script>
+    <script src="js/UIManager.js"></script>
+    <script src="js/Game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
