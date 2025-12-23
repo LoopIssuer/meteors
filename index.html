@@ -11,6 +11,7 @@
     <div id="gameContainer">
         <div class="stars" id="stars"></div>
 
+        <!-- UI Panel podczas gry -->
         <div id="uiPanel" class="hidden">
             <div class="ui-section">
                 <span id="currentPlayer">Gracz</span>
@@ -27,11 +28,9 @@
                 <span>🏆 Wynik:</span>
                 <span id="score">0</span>
             </div>
-            <div class="ui-section" id="difficulty">
-                <span>Poziom:</span>
-                <button class="diff-btn easy active" data-diff="easy">Łatwy</button>
-                <button class="diff-btn medium" data-diff="medium">Średni</button>
-                <button class="diff-btn hard" data-diff="hard">Trudny</button>
+            <!-- Zmienione: tylko etykieta zamiast przycisków -->
+            <div class="ui-section">
+                <span id="difficultyLabel" class="difficulty-label">Poziom: Łatwy</span>
             </div>
         </div>
 
@@ -52,11 +51,24 @@
         </div>
 
         <div id="overlay">
+            <!-- Ekran ładowania -->
             <div id="loadingScreen" class="loading">
                 <div class="spinner"></div>
                 <p>Ładowanie danych graczy...</p>
             </div>
 
+            <!-- Ekran uprawnień mikrofonu -->
+            <div id="micPermissionScreen" class="hidden">
+                <h1>🎤 Wymagany dostęp do mikrofonu</h1>
+                <div class="instructions">
+                    <p>Ta gra wymaga dostępu do mikrofonu, aby rozpoznawać Twoje odpowiedzi głosowe.</p>
+                    <p>Kliknij przycisk poniżej i zezwól na dostęp w oknie przeglądarki.</p>
+                </div>
+                <button id="requestMicBtn" class="game-btn primary">🎤 ZEZWÓL NA MIKROFON</button>
+                <p class="mic-hint">💡 Wskazówka: Zaznacz "Zapamiętaj tę decyzję" aby nie pytać ponownie</p>
+            </div>
+
+            <!-- Ekran menu -->
             <div id="menuScreen" class="hidden">
                 <h1>🚀 Matematyczna Obrona 🌟</h1>
                 
@@ -83,6 +95,7 @@
                 <button id="startBtn" disabled>▶️ WYBIERZ GRACZA</button>
             </div>
 
+            <!-- Ekran końca gry -->
             <div id="gameOverScreen" class="hidden"></div>
         </div>
     </div>

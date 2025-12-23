@@ -1,5 +1,5 @@
 /**
- * SpeechManager - Handles speech recognition
+ * SpeechManager - Handles speech recognition with permission management
  */
 class SpeechManager {
     constructor() {
@@ -7,8 +7,15 @@ class SpeechManager {
         this.recognition = null;
         this.isSupported = !!this.SpeechRecognition;
         this.isListening = false;
+        this.permissionGranted = false;
+        
+        // Callbacks
         this.onResult = null;
         this.onStatusChange = null;
+        this.onPermissionChange = null;
+        
+        // Check saved permission state
+        this._loadPermissionState();
     }
     
     /**
@@ -17,6 +24,84 @@ class SpeechManager {
      */
     checkSupport() {
         return this.isSupported;
+    }
+    
+    /**
+     * Load permission state from localStorage
+     * @private
+     */
+    _loadPermissionState() {
+        const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.MICROPHONE_GRANTED);
+        this.permissionGranted = saved === 'true';
+    }
+    
+    /**
+     * Save permission state to localStorage
+     * @private
+     */
+    _savePermissionState(granted) {
+        this.permissionGranted = granted;
+        localStorage.setItem(CONFIG.STORAGE_KEYS.MICROPHONE_GRANTED, granted.toString());
+    }
+    
+    /**
+     * Check current microphone permission status
+     * @returns {Promise<string>} 'granted', 'denied', or 'prompt'
+     */
+    async checkPermission() {
+        try {
+            // Try using Permissions API first (not supported in all browsers)
+            if (navigator.permissions && navigator.permissions.query) {
+                const result = await navigator.permissions.query({ name: 'microphone' });
+                return result.state;
+            }
+        } catch (e) {
+            console.log('Permissions API not available, falling back to saved state');
+        }
+        
+        // Fallback to saved state
+        return this.permissionGranted ? 'granted' : 'prompt';
+    }
+    
+    /**
+     * Request microphone permission
+     * @returns {Promise<boolean>} Whether permission was granted
+     */
+    async requestPermission() {
+        try {
+            // Request microphone access
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Stop all tracks immediately (we just needed permission)
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Permission granted
+            this._savePermissionState(true);
+            
+            if (this.onPermissionChange) {
+                this.onPermissionChange(true);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Microphone permission denied:', error);
+            this._savePermissionState(false);
+            
+            if (this.onPermissionChange) {
+                this.onPermissionChange(false);
+            }
+            
+            return false;
+        }
+    }
+    
+    /**
+     * Check if we need to request permission
+     * @returns {Promise<boolean>}
+     */
+    async needsPermissionRequest() {
+        const status = await this.checkPermission();
+        return status === 'prompt' || status === 'denied';
     }
     
     /**
@@ -32,6 +117,7 @@ class SpeechManager {
         
         this.recognition.onstart = () => {
             this.isListening = true;
+            this._savePermissionState(true); // If we got here, permission is granted
             this._updateStatus('listening', 'Słucham...');
         };
         
@@ -55,7 +141,13 @@ class SpeechManager {
         
         this.recognition.onerror = (event) => {
             console.log('Speech error:', event.error);
-            if (event.error !== 'no-speech' && event.error !== 'aborted') {
+            
+            if (event.error === 'not-allowed') {
+                this._savePermissionState(false);
+                if (this.onPermissionChange) {
+                    this.onPermissionChange(false);
+                }
+            } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
                 this._updateStatus('error', 'Błąd - ponawiam...');
             }
         };
@@ -72,7 +164,11 @@ class SpeechManager {
             }
         };
         
-        this.recognition.start();
+        try {
+            this.recognition.start();
+        } catch (e) {
+            console.error('Failed to start recognition:', e);
+        }
     }
     
     /**
@@ -81,7 +177,11 @@ class SpeechManager {
     stop() {
         this.isListening = false;
         if (this.recognition) {
-            this.recognition.stop();
+            try {
+                this.recognition.stop();
+            } catch (e) {
+                console.log('Error stopping recognition:', e);
+            }
             this.recognition = null;
         }
     }

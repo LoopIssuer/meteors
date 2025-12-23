@@ -9,6 +9,7 @@ class UIManager {
             loadingScreen: document.getElementById('loadingScreen'),
             menuScreen: document.getElementById('menuScreen'),
             gameOverScreen: document.getElementById('gameOverScreen'),
+            micPermissionScreen: document.getElementById('micPermissionScreen'),
             uiPanel: document.getElementById('uiPanel'),
             launcher: document.getElementById('launcher'),
             leaderboard: document.getElementById('leaderboard'),
@@ -17,26 +18,40 @@ class UIManager {
             speechText: document.getElementById('speechText'),
             playersGrid: document.getElementById('playersGrid'),
             startBtn: document.getElementById('startBtn'),
+            requestMicBtn: document.getElementById('requestMicBtn'),
             score: document.getElementById('score'),
             lives: document.getElementById('lives'),
             currentPlayer: document.getElementById('currentPlayer'),
+            difficultyLabel: document.getElementById('difficultyLabel'),
             warning: document.getElementById('warning')
         };
     }
     
     // ==================== SCREENS ====================
     
-    showLoading() {
-        this.elements.loadingScreen.classList.remove('hidden');
+    hideAllScreens() {
+        this.elements.loadingScreen.classList.add('hidden');
         this.elements.menuScreen.classList.add('hidden');
         this.elements.gameOverScreen.classList.add('hidden');
+        this.elements.micPermissionScreen.classList.add('hidden');
+    }
+    
+    showLoading() {
+        this.hideAllScreens();
+        this.elements.overlay.classList.remove('hidden');
+        this.elements.loadingScreen.classList.remove('hidden');
+    }
+    
+    showMicPermission() {
+        this.hideAllScreens();
+        this.elements.overlay.classList.remove('hidden');
+        this.elements.micPermissionScreen.classList.remove('hidden');
     }
     
     showMenu() {
+        this.hideAllScreens();
         this.elements.overlay.classList.remove('hidden');
-        this.elements.loadingScreen.classList.add('hidden');
         this.elements.menuScreen.classList.remove('hidden');
-        this.elements.gameOverScreen.classList.add('hidden');
     }
     
     showGame() {
@@ -55,15 +70,11 @@ class UIManager {
     }
     
     showGameOver(playerName, avatar, score, isNewHighscore, highscore, difficulty) {
+        this.hideAllScreens();
         this.elements.overlay.classList.remove('hidden');
         this.elements.gameOverScreen.classList.remove('hidden');
-        this.elements.menuScreen.classList.add('hidden');
         
-        const difficultyText = {
-            easy: 'Łatwy',
-            medium: 'Średni',
-            hard: 'Trudny'
-        };
+        const difficultyLabel = CONFIG.DIFFICULTY[difficulty].label;
         
         this.elements.gameOverScreen.innerHTML = `
             <h1>💥 KONIEC GRY 💥</h1>
@@ -75,7 +86,7 @@ class UIManager {
             ` : `
                 <p>Twój rekord: ${highscore} punktów</p>
             `}
-            <p>Poziom trudności: ${difficultyText[difficulty]}</p>
+            <p>Poziom trudności: ${difficultyLabel}</p>
             
             <div style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap; justify-content: center;">
                 <button class="game-btn primary" onclick="game.restart()">🔄 ZAGRAJ PONOWNIE</button>
@@ -159,6 +170,36 @@ class UIManager {
         hearts.forEach(heart => heart.classList.remove('lost'));
     }
     
+    // ==================== DIFFICULTY ==================== 
+    
+    /**
+     * Update difficulty label during gameplay
+     * @param {string} difficulty - easy, medium, or hard
+     */
+    updateDifficultyLabel(difficulty) {
+        const label = this.elements.difficultyLabel;
+        const settings = CONFIG.DIFFICULTY[difficulty];
+        
+        // Remove old classes
+        label.classList.remove('easy', 'medium', 'hard');
+        
+        // Add new class and update text
+        label.classList.add(difficulty);
+        label.textContent = `Poziom: ${settings.label}`;
+    }
+    
+    setupDifficultyButtons(onSelect) {
+        const menuButtons = document.querySelectorAll('#difficultyMenu .diff-btn');
+        
+        menuButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                menuButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                onSelect(btn.dataset.diff);
+            });
+        });
+    }
+    
     // ==================== LEADERBOARD ====================
     
     updateLeaderboard(players, currentPlayerId) {
@@ -202,32 +243,11 @@ class UIManager {
         }, 100);
     }
     
-    // ==================== DIFFICULTY ====================
+    // ==================== MIC PERMISSION ====================
     
-    setupDifficultyButtons(onSelect) {
-        const menuButtons = document.querySelectorAll('#difficultyMenu .diff-btn');
-        const gameButtons = document.querySelectorAll('#difficulty .diff-btn');
-        
-        menuButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                menuButtons.forEach(b => b.classList.remove('active'));
-                gameButtons.forEach(b => {
-                    b.classList.toggle('active', b.dataset.diff === btn.dataset.diff);
-                });
-                btn.classList.add('active');
-                onSelect(btn.dataset.diff);
-            });
-        });
-        
-        gameButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Only allow changes when game is not running
-                if (window.game && window.game.isRunning) return;
-                
-                gameButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                onSelect(btn.dataset.diff);
-            });
-        });
+    setupMicPermissionButton(onClick) {
+        if (this.elements.requestMicBtn) {
+            this.elements.requestMicBtn.addEventListener('click', onClick);
+        }
     }
 }

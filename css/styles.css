@@ -91,12 +91,30 @@ body {
     transition: transform 0.2s;
 }
 
-/* ========== DIFFICULTY BUTTONS ========== */
-#difficulty {
-    display: flex;
-    gap: 5px;
+/* ========== DIFFICULTY LABEL (nowe) ========== */
+.difficulty-label {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
 }
 
+.difficulty-label.easy {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+}
+
+.difficulty-label.medium {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+}
+
+.difficulty-label.hard {
+    background: linear-gradient(135deg, #f44336, #C62828);
+    color: white;
+}
+
+/* ========== DIFFICULTY BUTTONS (menu) ========== */
 .diff-btn {
     padding: 8px 16px;
     border: none;
@@ -355,6 +373,34 @@ body {
     margin: 20px 0;
 }
 
+/* ========== MICROPHONE PERMISSION SCREEN (nowe) ========== */
+#micPermissionScreen {
+    text-align: center;
+}
+
+#micPermissionScreen h1 {
+    font-size: 36px;
+    margin-bottom: 30px;
+}
+
+.mic-hint {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #aaa;
+    font-style: italic;
+}
+
+#requestMicBtn {
+    font-size: 24px;
+    padding: 20px 40px;
+    animation: pulseBtn 2s infinite;
+}
+
+@keyframes pulseBtn {
+    0%, 100% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+    50% { box-shadow: 0 0 30px rgba(76, 175, 80, 0.8); }
+}
+
 /* ========== PLAYER SELECTION ========== */
 .player-selection {
     margin: 30px 0;
@@ -526,4 +572,5 @@ body {
     .player-card { padding: 15px; }
     .player-avatar { font-size: 35px; }
     #leaderboard { display: none; }
+    #micPermissionScreen h1 { font-size: 24px; }
 }

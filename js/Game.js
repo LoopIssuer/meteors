@@ -33,7 +33,7 @@ class Game {
      * Initialize game
      * @private
      */
-    _init() {
+    async _init() {
         // Check speech support
         if (!this.speech.checkSupport()) {
             this.ui.showWarning();
@@ -46,13 +46,63 @@ class Game {
         // Setup speech callbacks
         this.speech.onResult = (number) => this._onSpeechResult(number);
         this.speech.onStatusChange = (status, text) => this.ui.updateSpeechStatus(status, text);
+        this.speech.onPermissionChange = (granted) => this._onPermissionChange(granted);
         
         // Setup UI callbacks
         this.ui.setupDifficultyButtons((diff) => this.difficulty = diff);
+        this.ui.setupMicPermissionButton(() => this._requestMicPermission());
         document.getElementById('startBtn').addEventListener('click', () => this.start());
         
-        // Load players
-        this.loadPlayers();
+        // Check microphone permission and proceed
+        await this._checkAndRequestMicPermission();
+    }
+    
+    /**
+     * Check microphone permission and show appropriate screen
+     * @private
+     */
+    async _checkAndRequestMicPermission() {
+        this.ui.showLoading();
+        
+        const permissionStatus = await this.speech.checkPermission();
+        
+        if (permissionStatus === 'granted') {
+            // Permission already granted, load players
+            await this.loadPlayers();
+        } else if (permissionStatus === 'denied') {
+            // Permission was denied, show permission screen with instructions
+            this.ui.showMicPermission();
+        } else {
+            // Permission not yet requested, show permission screen
+            this.ui.showMicPermission();
+        }
+    }
+    
+    /**
+     * Request microphone permission
+     * @private
+     */
+    async _requestMicPermission() {
+        const granted = await this.speech.requestPermission();
+        
+        if (granted) {
+            await this.loadPlayers();
+        } else {
+            // Show error message
+            alert('Dostęp do mikrofonu jest wymagany do gry. Zezwól na dostęp w ustawieniach przeglądarki.');
+        }
+    }
+    
+    /**
+     * Handle permission change
+     * @private
+     */
+    _onPermissionChange(granted) {
+        if (!granted && this.isRunning) {
+            // Permission revoked during game
+            this._gameOver();
+            alert('Dostęp do mikrofonu został odebrany. Gra została zakończona.');
+        }
     }
     
     /**
@@ -93,6 +143,7 @@ class Game {
         this.ui.showGame();
         this.ui.updateScore(0);
         this.ui.resetLives();
+        this.ui.updateDifficultyLabel(this.difficulty);
         
         const playerIndex = this.players.findIndex(p => p.id === this.currentPlayer.id);
         const avatar = CONFIG.AVATARS[playerIndex % CONFIG.AVATARS.length];

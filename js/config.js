@@ -13,20 +13,22 @@ const CONFIG = {
     // Difficulty settings
     DIFFICULTY: {
         easy: {
-            spawnRate: 3000,
+            spawnRate: 3500,        // Wolniejsze pojawianie się
             meteorSize: 80,
-            speedBase: 0.8,
-            speedVariance: 0.5,
+            speedBase: 0.4,         // ZMNIEJSZONE z 0.8 na 0.4
+            speedVariance: 0.2,     // Mniejsza wariancja
             points: 10,
-            numberRange: { min: 1, max: 9 }
+            numberRange: { min: 1, max: 9 },
+            label: 'Łatwy'
         },
         medium: {
             spawnRate: 2500,
             meteorSize: 90,
-            speedBase: 1.1,
-            speedVariance: 0.5,
+            speedBase: 1.0,
+            speedVariance: 0.4,
             points: 25,
-            numberRange: { min: 10, max: 99, secondMin: 1, secondMax: 9 }
+            numberRange: { min: 10, max: 99, secondMin: 1, secondMax: 9 },
+            label: 'Średni'
         },
         hard: {
             spawnRate: 2000,
@@ -34,7 +36,8 @@ const CONFIG = {
             speedBase: 1.4,
             speedVariance: 0.5,
             points: 50,
-            numberRange: { min: 10, max: 99 }
+            numberRange: { min: 10, max: 99 },
+            label: 'Trudny'
         }
     },
     
@@ -67,7 +70,12 @@ const CONFIG = {
     },
     
     // Stars
-    STAR_COUNT: 100
+    STAR_COUNT: 100,
+    
+    // Local storage keys
+    STORAGE_KEYS: {
+        MICROPHONE_GRANTED: 'meteor_game_mic_granted'
+    }
 };
 
 // Freeze config to prevent modifications
@@ -75,3 +83,4 @@ Object.freeze(CONFIG);
 Object.freeze(CONFIG.DIFFICULTY);
 Object.freeze(CONFIG.POLISH_NUMBERS);
 Object.freeze(CONFIG.EXPLOSION);
+Object.freeze(CONFIG.STORAGE_KEYS);
