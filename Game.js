@@ -28,6 +28,12 @@ class Game {
         this.nextBossScore = CONFIG.BOSS_METEOR.firstSpawn;
         this.bossSpawned = false;
         
+        // Powerup system
+        this.lastPowerupScore = 0;
+        this.nextPowerupScore = CONFIG.POWERUP.spawnInterval;
+        this.activePowerups = new Map(); // Map of active powerups with timers
+        this.hasShield = false;
+        
         // Game objects
         this.meteors = [];
         this.rockets = [];
@@ -40,22 +46,31 @@ class Game {
     }
     
     async _init() {
-        if (!this.speech.checkSupport()) {
-            this.ui.showWarning();
-            return;
+        try {
+            if (!this.speech.checkSupport()) {
+                this.ui.showWarning();
+                return;
+            }
+            
+            this.particles.generateStars();
+            
+            this.speech.onResult = (number) => this._onSpeechResult(number);
+            this.speech.onStatusChange = (status, text) => this.ui.updateSpeechStatus(status, text);
+            this.speech.onPermissionChange = (granted) => this._onPermissionChange(granted);
+            
+            this.ui.setupDifficultyButtons((diff) => this.difficulty = diff);
+            this.ui.setupMicPermissionButton(() => this._requestMicPermission());
+            
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => this.start());
+            }
+            
+            await this._checkAndRequestMicPermission();
+        } catch (error) {
+            console.error('Initialization error:', error);
+            this.ui.showLoadingError('Błąd inicjalizacji: ' + error.message);
         }
-        
-        this.particles.generateStars();
-        
-        this.speech.onResult = (number) => this._onSpeechResult(number);
-        this.speech.onStatusChange = (status, text) => this.ui.updateSpeechStatus(status, text);
-        this.speech.onPermissionChange = (granted) => this._onPermissionChange(granted);
-        
-        this.ui.setupDifficultyButtons((diff) => this.difficulty = diff);
-        this.ui.setupMicPermissionButton(() => this._requestMicPermission());
-        document.getElementById('startBtn').addEventListener('click', () => this.start());
-        
-        await this._checkAndRequestMicPermission();
     }
     
     async _checkAndRequestMicPermission() {
@@ -118,8 +133,13 @@ class Game {
         this.nextFastMeteorScore = this._calculateNextFastMeteorScore();
         this.nextBossScore = CONFIG.BOSS_METEOR.firstSpawn;
         this.bossSpawned = false;
+        this.lastPowerupScore = 0;
+        this.nextPowerupScore = CONFIG.POWERUP.spawnInterval;
+        this.activePowerups.clear();
+        this.hasShield = false;
         
         this.ui.showGame();
+        this.ui.clearActivePowerups();
         this.ui.updateScore(0);
         this.ui.resetLives();
         this.ui.resetStreak();
@@ -149,6 +169,12 @@ class Game {
     
     _spawnMeteor() {
         if (!this.isRunning) return;
+        
+        // Check for powerup spawn
+        if (this.score >= this.nextPowerupScore) {
+            this._spawnPowerup();
+            return;
+        }
         
         // Check for boss spawn
         if (this.score >= this.nextBossScore && !this.bossSpawned) {
@@ -187,6 +213,20 @@ class Game {
         
         this.bossSpawned = true;
         this.nextBossScore += CONFIG.BOSS_METEOR.spawnInterval;
+    }
+    
+    _spawnPowerup() {
+        if (!this.isRunning) return;
+        
+        // Choose random powerup type
+        const powerupTypes = CONFIG.POWERUP.types;
+        const randomPowerup = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+        
+        const meteor = new Meteor(this.container, this.difficulty, 'powerup', randomPowerup);
+        this.meteors.push(meteor);
+        
+        this.lastPowerupScore = this.score;
+        this.nextPowerupScore = this.score + CONFIG.POWERUP.spawnInterval;
     }
     
     _spawnSplittingChildren(parentX, parentY) {
@@ -277,6 +317,11 @@ class Game {
                     this._spawnSplittingChildren(target.x, target.y);
                 }
                 
+                // Handle powerup meteor
+                if (target.type === 'powerup') {
+                    this._activatePowerup(target.getPowerupType());
+                }
+                
                 target.destroy();
                 rocket.destroy();
                 
@@ -320,12 +365,125 @@ class Game {
             points += meteor.getBonusPoints();
         }
         
+        // Apply double points powerup
+        if (this.activePowerups.has('doublePoints')) {
+            points *= 2;
+        }
+        
         this.score += points;
         this.ui.updateScore(this.score);
         
         if (this.score >= this.nextFastMeteorScore) {
             this._spawnFastMeteor();
         }
+    }
+    
+    _activatePowerup(powerupType) {
+        if (!powerupType) return;
+        
+        switch (powerupType.id) {
+            case 'doublePoints':
+                this._activateDoublePoints(powerupType);
+                break;
+            case 'slowTime':
+                this._activateSlowTime(powerupType);
+                break;
+            case 'megaBomb':
+                this._activateMegaBomb();
+                break;
+            case 'shield':
+                this._activateShield();
+                break;
+        }
+    }
+    
+    _activateDoublePoints(powerupType) {
+        // Clear existing timer if any
+        if (this.activePowerups.has('doublePoints')) {
+            clearTimeout(this.activePowerups.get('doublePoints'));
+        }
+        
+        this.ui.showPowerupNotification(powerupType.name, powerupType.icon);
+        this.ui.addActivePowerup('doublePoints', powerupType.name, powerupType.icon, powerupType.duration);
+        
+        const timer = setTimeout(() => {
+            this.activePowerups.delete('doublePoints');
+            this.ui.removeActivePowerup('doublePoints');
+        }, powerupType.duration);
+        
+        this.activePowerups.set('doublePoints', timer);
+    }
+    
+    _activateSlowTime(powerupType) {
+        // Clear existing timer if any
+        if (this.activePowerups.has('slowTime')) {
+            clearTimeout(this.activePowerups.get('slowTime'));
+            // Remove old slow effect
+            this.meteors.forEach(m => {
+                if (!m.isDestroyed && m.originalSpeed) {
+                    m.speed = m.originalSpeed;
+                    delete m.originalSpeed;
+                }
+            });
+        }
+        
+        this.ui.showPowerupNotification(powerupType.name, powerupType.icon);
+        this.ui.addActivePowerup('slowTime', powerupType.name, powerupType.icon, powerupType.duration);
+        
+        // Slow all meteors
+        this.meteors.forEach(m => {
+            if (!m.isDestroyed && m.type !== 'powerup') {
+                m.originalSpeed = m.speed;
+                m.speed *= (1 - powerupType.slowFactor);
+            }
+        });
+        
+        const timer = setTimeout(() => {
+            // Restore normal speed
+            this.meteors.forEach(m => {
+                if (!m.isDestroyed && m.originalSpeed) {
+                    m.speed = m.originalSpeed;
+                    delete m.originalSpeed;
+                }
+            });
+            this.activePowerups.delete('slowTime');
+            this.ui.removeActivePowerup('slowTime');
+        }, powerupType.duration);
+        
+        this.activePowerups.set('slowTime', timer);
+    }
+    
+    _activateMegaBomb() {
+        const powerupType = CONFIG.POWERUP.types.find(p => p.id === 'megaBomb');
+        this.ui.showPowerupNotification(powerupType.name, powerupType.icon);
+        
+        // Destroy all meteors except powerups
+        const meteorsToDestroy = this.meteors.filter(m => !m.isDestroyed && m.type !== 'powerup');
+        
+        meteorsToDestroy.forEach(meteor => {
+            const center = meteor.getCenter();
+            this.particles.createExplosion(center.x, center.y);
+            
+            meteor.destroy();
+            const index = this.meteors.indexOf(meteor);
+            if (index > -1) this.meteors.splice(index, 1);
+            
+            // Add points for destroyed meteors
+            const points = CONFIG.DIFFICULTY[this.difficulty].points;
+            this.score += points;
+        });
+        
+        if (meteorsToDestroy.length > 0) {
+            this.ui.updateScore(this.score);
+        }
+    }
+    
+    _activateShield() {
+        const powerupType = CONFIG.POWERUP.types.find(p => p.id === 'shield');
+        this.ui.showPowerupNotification(powerupType.name, powerupType.icon);
+        
+        this.hasShield = true;
+        this.ui.addActivePowerup('shield', powerupType.name, powerupType.icon, 0);
     }
     
     _handleBombExplosion(center) {

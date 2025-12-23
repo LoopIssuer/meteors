@@ -2,10 +2,10 @@
  * Meteor - Represents a single meteor
  */
 class Meteor {
-    constructor(container, difficulty, type = 'normal') {
+    constructor(container, difficulty, type = 'normal', powerupType = null) {
         this.container = container;
         this.difficulty = difficulty;
-        this.type = type; // 'normal', 'fast', 'bomb', 'splitting', 'multiply', 'boss'
+        this.type = type; // 'normal', 'fast', 'bomb', 'splitting', 'multiply', 'boss', 'powerup'
         this.element = null;
         this.result = 0;
         this.x = 0;
@@ -18,6 +18,9 @@ class Meteor {
         this.maxPhases = 0;
         this.phases = [];
         
+        // Powerup-specific properties
+        this.powerupType = powerupType;
+        
         this._create();
     }
     
@@ -27,6 +30,11 @@ class Meteor {
         // Generate problem(s) based on type
         if (this.type === 'boss') {
             this._createBoss(settings);
+            return;
+        }
+        
+        if (this.type === 'powerup') {
+            this._createPowerup(settings);
             return;
         }
         
@@ -136,6 +144,47 @@ class Meteor {
         this.container.appendChild(this.element);
     }
     
+    _createPowerup(settings) {
+        const powerupConfig = this.powerupType;
+        const size = CONFIG.POWERUP.size;
+        
+        // Generate simple problem
+        const problem = this._generateProblem();
+        this.result = problem.result;
+        this.speed = settings.speedBase * CONFIG.POWERUP.speedMultiplier;
+        
+        this.x = Math.random() * (window.innerWidth - size);
+        this.y = -size;
+        
+        this.element = document.createElement('div');
+        this.element.className = 'meteor powerup';
+        this.element.style.width = size + 'px';
+        this.element.style.height = size + 'px';
+        this.element.style.left = this.x + 'px';
+        this.element.style.top = this.y + 'px';
+        this.element.style.setProperty('--powerup-color', powerupConfig.color);
+        
+        // Powerup icon
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'powerup-icon';
+        iconDiv.textContent = powerupConfig.icon;
+        this.element.appendChild(iconDiv);
+        
+        // Problem text
+        const textSpan = document.createElement('span');
+        textSpan.className = 'meteor-text';
+        textSpan.textContent = problem.text;
+        this.element.appendChild(textSpan);
+        
+        // Powerup label
+        const label = document.createElement('div');
+        label.className = 'powerup-label';
+        label.textContent = powerupConfig.name;
+        this.element.appendChild(label);
+        
+        this.container.appendChild(this.element);
+    }
+    
     _generateProblem() {
         // Special handling for multiply meteor
         if (this.type === 'multiply') {
@@ -213,7 +262,15 @@ class Meteor {
         if (this.type === 'splitting') return CONFIG.SPLITTING_METEOR.bonusPoints;
         if (this.type === 'multiply') return CONFIG.MULTIPLY_METEOR.bonusPoints;
         if (this.type === 'boss') return CONFIG.BOSS_METEOR.bonusPoints;
+        if (this.type === 'powerup') return 0; // Powerupy nie dają punktów
         return 0;
+    }
+    
+    getPowerupType() {
+        if (this.type === 'powerup') {
+            return this.powerupType;
+        }
+        return null;
     }
     
     advanceBossPhase() {

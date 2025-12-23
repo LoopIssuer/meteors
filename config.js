@@ -100,6 +100,44 @@ const CONFIG = {
         healthBarHeight: 8            // Wysokość paska zdrowia
     },
     
+    // Powerup settings
+    POWERUP: {
+        spawnInterval: 100,           // Co ile punktów pojawia się powerup
+        size: 70,                     // Rozmiar meteorytu powerup
+        speedMultiplier: 0.6,         // Wolniejszy niż normalny
+        types: [
+            {
+                id: 'doublePoints',
+                name: 'Podwójne Punkty',
+                icon: '⭐',
+                duration: 30000,      // 30 sekund
+                color: '#FFD700'
+            },
+            {
+                id: 'slowTime',
+                name: 'Spowolnienie',
+                icon: '🕐',
+                duration: 10000,      // 10 sekund
+                slowFactor: 0.3,      // 30% wolniej (70% normalnej prędkości)
+                color: '#00BCD4'
+            },
+            {
+                id: 'megaBomb',
+                name: 'Megabomba',
+                icon: '💣',
+                duration: 0,          // Instant
+                color: '#FF5722'
+            },
+            {
+                id: 'shield',
+                name: 'Tarcza',
+                icon: '🛡️',
+                duration: 0,          // Do następnej straty życia
+                color: '#2196F3'
+            }
+        ]
+    },
+    
     // Player avatars
     AVATARS: ['🦊', '🐱', '🐶', '🦁', '🐼', '🐨', '🐯', '🦄', '🐲', '🦋'],
     

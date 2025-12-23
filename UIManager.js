@@ -258,4 +258,99 @@ class UIManager {
             this.elements.requestMicBtn.addEventListener('click', onClick);
         }
     }
+    
+    // ==================== POWERUPS ====================
+    
+    /**
+     * Show powerup notification
+     */
+    showPowerupNotification(name, icon) {
+        const notification = document.createElement('div');
+        notification.className = 'powerup-notification';
+        notification.innerHTML = `
+            <div class="powerup-notification-icon">${icon}</div>
+            <div class="powerup-notification-text">${name}</div>
+        `;
+        
+        document.getElementById('gameContainer').appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    /**
+     * Add active powerup indicator
+     */
+    addActivePowerup(id, name, icon, duration) {
+        let container = document.getElementById('activePowerupsContainer');
+        
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'activePowerupsContainer';
+            container.className = 'active-powerups-container';
+            document.getElementById('gameContainer').appendChild(container);
+        }
+        
+        // Remove existing if present
+        const existing = container.querySelector(`[data-powerup-id="${id}"]`);
+        if (existing) existing.remove();
+        
+        const powerupEl = document.createElement('div');
+        powerupEl.className = 'active-powerup';
+        powerupEl.dataset.powerupId = id;
+        
+        if (duration > 0) {
+            const endTime = Date.now() + duration;
+            powerupEl.innerHTML = `
+                <div class="active-powerup-icon">${icon}</div>
+                <div class="active-powerup-timer" data-end-time="${endTime}">
+                    ${Math.ceil(duration / 1000)}s
+                </div>
+            `;
+            
+            // Update timer
+            const interval = setInterval(() => {
+                const remaining = endTime - Date.now();
+                const timerEl = powerupEl.querySelector('.active-powerup-timer');
+                
+                if (remaining <= 0 || !timerEl) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                timerEl.textContent = Math.ceil(remaining / 1000) + 's';
+            }, 100);
+        } else {
+            powerupEl.innerHTML = `
+                <div class="active-powerup-icon">${icon}</div>
+            `;
+        }
+        
+        container.appendChild(powerupEl);
+    }
+    
+    /**
+     * Remove active powerup indicator
+     */
+    removeActivePowerup(id) {
+        const container = document.getElementById('activePowerupsContainer');
+        if (!container) return;
+        
+        const powerup = container.querySelector(`[data-powerup-id="${id}"]`);
+        if (powerup) {
+            powerup.classList.add('fade-out');
+            setTimeout(() => powerup.remove(), 300);
+        }
+    }
+    
+    /**
+     * Clear all active powerups
+     */
+    clearActivePowerups() {
+        const container = document.getElementById('activePowerupsContainer');
+        if (container) {
+            container.remove();
+        }
+    }
 }
