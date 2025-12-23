@@ -50,6 +50,13 @@ const CONFIG = {
     ROCKET_SPEED: 8,
     ROCKET_HIT_DISTANCE: 30,
     
+    // Fast meteor settings
+    FAST_METEOR: {
+        speedMultiplier: 2.5,        // Szybkość 2.5x większa niż normalny meteoryt
+        bonusPoints: 25,              // Dodatkowe punkty za zestrzelenie
+        spawnScoreInterval: { min: 50, max: 100 }  // Co ile punktów się pojawia
+    },
+    
     // Player avatars
     AVATARS: ['🦊', '🐱', '🐶', '🦁', '🐼', '🐨', '🐯', '🦄', '🐲', '🦋'],
     

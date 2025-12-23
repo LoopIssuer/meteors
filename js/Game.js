@@ -22,6 +22,10 @@ class Game {
         this.streakCount = 0;
         this.streakLevel = 0;
         
+        // Fast meteor system
+        this.lastFastMeteorScore = 0;
+        this.nextFastMeteorScore = this._calculateNextFastMeteorScore();
+        
         // Game objects
         this.meteors = [];
         this.rockets = [];
@@ -108,6 +112,8 @@ class Game {
         this.lives = CONFIG.INITIAL_LIVES;
         this.streakCount = 0;
         this.streakLevel = 0;
+        this.lastFastMeteorScore = 0;
+        this.nextFastMeteorScore = this._calculateNextFastMeteorScore();
         
         this.ui.showGame();
         this.ui.updateScore(0);
@@ -143,6 +149,21 @@ class Game {
         this.meteors.push(meteor);
     }
     
+    _spawnFastMeteor() {
+        if (!this.isRunning) return;
+        const meteor = new Meteor(this.container, this.difficulty, true);
+        this.meteors.push(meteor);
+        
+        this.lastFastMeteorScore = this.score;
+        this.nextFastMeteorScore = this._calculateNextFastMeteorScore();
+    }
+    
+    _calculateNextFastMeteorScore() {
+        const { min, max } = CONFIG.FAST_METEOR.spawnScoreInterval;
+        const interval = Math.floor(Math.random() * (max - min + 1)) + min;
+        return this.lastFastMeteorScore + interval;
+    }
+    
     _updateMeteors() {
         const limitY = window.innerHeight - CONFIG.LAUNCHER_Y_OFFSET;
         
@@ -166,6 +187,7 @@ class Game {
             if (result.hitTarget) {
                 const target = rocket.target;
                 const center = target.getCenter();
+                const isFastMeteor = target.isFast;
                 
                 this.particles.createExplosion(center.x, center.y);
                 
@@ -176,7 +198,7 @@ class Game {
                 if (meteorIndex > -1) this.meteors.splice(meteorIndex, 1);
                 this.rockets.splice(i, 1);
                 
-                this._addScore();
+                this._addScore(isFastMeteor);
                 this._incrementStreak();
             } else if (!result.active) {
                 rocket.destroy();
@@ -204,10 +226,19 @@ class Game {
         this.ui.animateLauncher();
     }
     
-    _addScore() {
-        const points = CONFIG.DIFFICULTY[this.difficulty].points;
+    _addScore(isFastMeteor = false) {
+        let points = CONFIG.DIFFICULTY[this.difficulty].points;
+        
+        if (isFastMeteor) {
+            points += CONFIG.FAST_METEOR.bonusPoints;
+        }
+        
         this.score += points;
         this.ui.updateScore(this.score);
+        
+        if (this.score >= this.nextFastMeteorScore) {
+            this._spawnFastMeteor();
+        }
     }
     
     _incrementStreak() {

@@ -2,9 +2,10 @@
  * Meteor - Represents a single meteor
  */
 class Meteor {
-    constructor(container, difficulty) {
+    constructor(container, difficulty, isFast = false) {
         this.container = container;
         this.difficulty = difficulty;
+        this.isFast = isFast;
         this.element = null;
         this.result = 0;
         this.x = 0;
@@ -22,12 +23,17 @@ class Meteor {
         this.result = problem.result;
         this.speed = settings.speedBase + Math.random() * settings.speedVariance;
         
+        // Apply fast meteor speed multiplier
+        if (this.isFast) {
+            this.speed *= CONFIG.FAST_METEOR.speedMultiplier;
+        }
+        
         const size = settings.meteorSize;
         this.x = Math.random() * (window.innerWidth - size);
         this.y = -size;
         
         this.element = document.createElement('div');
-        this.element.className = 'meteor';
+        this.element.className = this.isFast ? 'meteor fast' : 'meteor';
         this.element.style.width = size + 'px';
         this.element.style.height = size + 'px';
         this.element.style.left = this.x + 'px';
@@ -37,6 +43,14 @@ class Meteor {
         textSpan.className = 'meteor-text';
         textSpan.textContent = problem.text;
         this.element.appendChild(textSpan);
+        
+        // Add fast indicator
+        if (this.isFast) {
+            const fastIndicator = document.createElement('div');
+            fastIndicator.className = 'fast-indicator';
+            fastIndicator.textContent = '⚡';
+            this.element.appendChild(fastIndicator);
+        }
         
         this.container.appendChild(this.element);
     }

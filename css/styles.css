@@ -361,6 +361,34 @@ body {
     z-index: 30;
 }
 
+/* Fast Meteor */
+.meteor.fast {
+    background: radial-gradient(circle at 30% 30%, #ff3300, #cc0000, #660000);
+    box-shadow: inset -5px -5px 15px rgba(0,0,0,0.7), 0 0 30px rgba(255, 50, 0, 0.9), 0 0 50px rgba(255, 100, 0, 0.5);
+    animation: rotate 2s linear infinite, pulseFast 0.5s ease-in-out infinite;
+    border: 2px solid #ff6600;
+}
+
+@keyframes pulseFast {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.05) rotate(180deg); }
+}
+
+.fast-indicator {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    font-size: 24px;
+    animation: bounce 0.5s ease-in-out infinite;
+    z-index: 2;
+    filter: drop-shadow(0 0 5px rgba(255, 200, 0, 0.8));
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
 .meteor::before {
     content: '';
     position: absolute;
